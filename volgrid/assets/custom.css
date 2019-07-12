@@ -1,0 +1,25 @@
+body{
+    background-color: #fafaf7;
+}
+
+h1 {
+    text-align: center;
+}
+
+
+h2,h3, h4,h5,h6 {
+    text-align: center;
+}
+
+
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
