@@ -10,19 +10,24 @@ sys.path.append(os.path.abspath('../../dashgrid/dashgrid'))
 # print(sys.path)
 from dashgrid import dgrid
 import dash_core_components as dcc
+import traceback
 
 from volgrid import create_voltables
 
 #  do rest of imports
+import tqdm
 import dash
 import dash_html_components as html
 import pandas as pd
 import numpy as np
 import pandas_datareader.data as pdr
 import datetime
+import pickle
 import argparse as ap
+from dash.dependencies import Input, Output,State
 
 DEFAULT_IV_FILE_PATH = './df_iv_final.csv'
+PICKLE_PATH = './all_main_grids.p'
 
 # Create css styles for some parts of the display
 STYLE_TITLE={
@@ -67,17 +72,41 @@ def get_main_grid(commod_code,year_2_digits,df_iv_csv_path):
     main_grid =  dgrid.create_grid(grid_list,num_columns=2)
     return main_grid
 
+
+def pre_compute_main_grids(commod_list,year_list):
+    dict_return = {}
+    for commod_code in tqdm.tqdm(commod_list):
+        df_iv_csv_path = DEFAULT_IV_FILE_PATH.replace('.csv',f'_{commod_code}.csv')
+        dict_return[commod_code] = {}
+        for year in year_list:
+            year_2_digits = '%02d' %(int(str(year)))
+            print(f'pre_compute_main_grids: {commod_code} {year}')
+            mg = get_main_grid(commod_code, year_2_digits, df_iv_csv_path)
+            dict_return[commod_code][year] = mg
+    return dict_return
+
+
+class ReactDiv(dgrid.ReactiveDiv):
+    def __init__(self,html_id,input_tuple,
+                 input_transformer=None,display=True,
+                 dom_storage_dict=None,
+                 style=None):
+        pass
+
     
 def execute(args):
-    # create the app layout         
-    host = args.host
-    port = args.port
-
-#     loc_div = dcc.Location(id='url', refresh=False)
+    '''
+    create the Dash app and launch it on args.host and args.port
+    '''
+    # Step 1: create a title at the top
     title_div = html.Div([html.H3('Commodity Options Historical Skew Analysis (by day/strike)')],style=STYLE_TITLE)
+
+    # Step 2: create a grid that includes an explanation, and 2 dropdowns
+    #    Step 2.1: create the information h3
     m = html.H3("From the dropdown buttons to the right, select a Commodity and/or a Year",style={'height':'1px'})
     info_div = dgrid.GridItem(m,html_id='explain')
 
+    #    Step 2.2: create the commodity dropdown
     def _transform_commod_selection(data):
         print(data)
         return data
@@ -87,48 +116,66 @@ def execute(args):
                             transformer_method=_transform_commod_selection
                              )
 
+    #    Step 2.3: create the year dropdown
     years = ['%02d' %(y) for y in np.arange(11,20)]
     full_years = ['20'+y for y in years]
     last_year_index = len(years)-1
     select_year_div =  dgrid.DropDownDiv('year_dropdown', 
                             full_years,years ,style=STYLE_UPGRID,default_initial_index=last_year_index)
 
-    
+    #    Step 2.2=4: create a grid with the above 3 elements
     dropdown_grid = dgrid.create_grid([info_div,select_commod_div,select_year_div],num_columns=3,column_width_percents=[70,14.95,14.95])
 
-    def _get_main_grid_from_dropdowns():
+    # Step 3: define a method that gets called when the user selects a dropdown
+    def _get_main_grid_from_dropdowns(input,data):
         commod_code = select_commod_div.current_value
         if commod_code is None:
             commod_code = 'ES'
         year_2_digits = select_year_div.current_value
         if year_2_digits is None:
             year_2_digits = 19
-        print(f'entering _get_main_grid_from_dropdowns commod_code: {commod_code} year {year_2_digits}')
+        
+        try:
+            if len(data)>0:
+                print(f'using data from pickled dictionary commod_code: {commod_code} year {year_2_digits}')
+                return data[commod_code][int(year_2_digits)]
+        except Exception as e:
+            traceback.print_exc()
+        print(f'recomputing data commod_code: {commod_code} year {year_2_digits}')    
         df_iv_csv_path = DEFAULT_IV_FILE_PATH.replace('.csv',f'_{commod_code}.csv')
         mg = get_main_grid(commod_code, year_2_digits, df_iv_csv_path)
         return mg
-        
-    content_div = dgrid.ReactiveDiv('page_content',select_commod_div.output_tuple,
-                        input_transformer=lambda commod:_get_main_grid_from_dropdowns())
     
+    # Step 4: create the main Div that holds all of the charts
+#     print(f'starting load chart info dictionary from pickle at {datetime.datetime.now()}')
+#     temp_dict = pickle.load(open(PICKLE_PATH,'rb'))
+#     dict_chart_info = {}
+#     for kc in temp_dict.keys():
+#         dict_chart_info[kc] = {}
+#         for ky in temp_dict[kc].keys():
+#             ky_int = int(ky)
+#             dict_chart_info[kc][ky_int] = temp_dict[kc][ky]
+
+            
+    dict_chart_info = {}
+    print(f'end load chart info dictionary from pickle at {datetime.datetime.now()}')
+    content_div = dgrid.ReactiveDiv('page_content',select_commod_div.output_tuple,
+                        input_transformer=lambda commod,data:_get_main_grid_from_dropdowns(commod,data),
+                        dom_storage_dict=dict_chart_info)
+    
+    # Step 5: create the dash app, the layout, and the callbacks
     app = dash.Dash()
     main_div = html.Div(children=[title_div,dropdown_grid,content_div.html])
+    
     app.layout = html.Div(children=[main_div])
     
     callback_components = [select_commod_div,select_year_div,content_div]
     [c.callback(app) for c in callback_components]
         
-
-#     @app.callback(dash.dependencies.Output('page-content', 'children'),
-#                   [dash.dependencies.Input('url', 'pathname')])
-#     def display_page(pathname):
-#         commod_code = 'ES' if pathname is None or pathname =='/'  else pathname.upper().replace('/','')
-#         main_grid = get_main_grid(commod_code,19,DEFAULT_IV_FILE_PATH.replace('.csv',f'_{commod_code}.csv'))
-#         title_div = html.Div([html.H3('Commodity Options Historical Skew Analysis (by day/strike)')],style=STYLE_TITLE)
-#         ret_layout = [title_div,main_grid]
-#         return ret_layout
     
-    # run server    
+    # Step 6: run the server    
+    host = args.host
+    port = args.port
     app.run_server(host=host,port=port)
      
     
@@ -146,6 +193,9 @@ if __name__ == '__main__':
     parser.add_argument('--commod_code',type=str,
                         help='commodity code to analyze, like CL,CB or ES. Default=ES',
                         default='ES')   
+    parser.add_argument('--do_precompute',type=bool,
+                        help='precoumpte all graphs and pickle them',
+                        default=False)
     n = datetime.datetime.now()
     yyyymmdd = n.strftime('%Y%m%d')
     yy = int(str(yyyymmdd)[2:4])
@@ -155,6 +205,10 @@ if __name__ == '__main__':
                         default=yy)  
     
     args = parser.parse_args()
-    execute(args)
+    if args.do_precompute:
+        all_main_grids = pre_compute_main_grids(['ES','CL','CB'],np.arange(11,20))
+        pickle.dump(all_main_grids,open(PICKLE_PATH,'wb'))
+    else:    
+        execute(args)
     
     

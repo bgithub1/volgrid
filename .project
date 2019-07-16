@@ -3,6 +3,7 @@
 	<name>volgrid</name>
 	<comment></comment>
 	<projects>
+		<project>dashgrid</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
