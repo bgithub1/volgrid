@@ -13,7 +13,7 @@ import dash_html_components as html
 
 
 dash_list = dgrid.component_example_dataframe_graph().component_list
-clist = [dgrid.ComponentWrapper.build_from_json(cj) for cj in dash_list]
+clist = [dgrid.ComponentWrapper2.build_from_json(cj) for cj in dash_list]
 
 app = dash.Dash()
 
