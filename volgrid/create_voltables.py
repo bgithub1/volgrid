@@ -62,18 +62,32 @@ class VolTable():
 
     def create_skew_per_date_df(self,contract):
         '''
-        Find the first settle_date whose count of rows is equal to max count of rows.
+        Create a DataFrame whose columns are settle_date's and whose
+           rows are amounts from the money.
+        You can use this to graph the skew of a symbol, and have
+           multiple day's curves per graph
+        :param contract:
         '''
-        # get just that symbol's data
         # get just that symbol's data and only days that have sufficient skew data
         dft = self.df_iv[self.df_iv.symbol==contract]
+        
+        # make sure that, for each settle_date in dft, there are sufficient
+        #    number of records (1 record per moneyness). 
         dft_count = dft[['settle_date','symbol']].groupby('settle_date',as_index=False).count()
         valid_settle_dates = dft_count[dft_count.symbol>2].settle_date.unique()
+        # make df12 only have settle_dates that have sufficient moneyness records
         df12 = dft[dft.settle_date.isin(valid_settle_dates)]
+        
+        # for each settle_date, there will be some that don't 
+        #   have a record for every level of moneyness
+        # Just select those moneyness levels where, for that moneyness level,
+        #   there are are an equal number of settle_dates
         df_counts = df12[['settle_date','moneyness']].groupby('settle_date',as_index=False).count()
         max_count = df_counts.moneyness.max()
         first_max_count_settle_date = df_counts[df_counts.moneyness==max_count].iloc[0].settle_date
         
+        # now loop through each date, and turn that date into a column of 
+        #   the final DataFrame
         df_ret = df12[df12.settle_date==first_max_count_settle_date][['moneyness']]
         all_settle_dates = sorted(df_counts.settle_date.unique())
         for settle_date in all_settle_dates:
@@ -87,6 +101,9 @@ class VolTable():
 
     def graph_skew(self,contract):
         '''
+        Create a multiple graph figures for one contract, where each figure
+          graphs multiple lines for mulitple settle_dates, and where
+          the x axis is moneyness, and the y axis is vol skew
         Graph skew for ONLY ONE symbol.
         If df_iv_final contains more than one symbol, we will only graph the first symbol in the DataFrames    
         '''
