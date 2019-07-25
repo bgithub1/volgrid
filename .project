@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>dashgrid</project>
+		<project>risktables</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

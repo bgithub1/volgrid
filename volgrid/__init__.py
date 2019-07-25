@@ -108,7 +108,7 @@ def execute(args):
 
     #    Step 2.2: create the commodity dropdown
     def _transform_commod_selection(data):
-        print(data)
+#         print(data)
         return data
     select_commod_div  = dgrid.DropDownDiv('commod_dropdown', 
                             ['E-Mini SP','Nymex Crude','Ice Brent'], 
