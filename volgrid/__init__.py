@@ -1,3 +1,17 @@
+'''
+volgrid.__init__.py contains a Plotly Dash app that displays daily volatility skew
+graphs for a specfic commodities contract, for a specific set of days.
+
+Options settlement data from barchart (via a $21/month subscription) allows you obtain
+implied volatilities for any options contract that trades on the CME, LME or ICE.  Then,
+using standard spline interpolation libraries, daily volatilities for normalized ranges of 
+strikes are computed, and displayed via Plotly graphs, and Dash html components.
+
+The options settlement data is stored in a postgres database after it is downloaded
+from barchart.  Option implied volatility calculations are executed in the module option_models.py.
+
+'''
+
 # Add the folder that contains this module, and it's parent folder to sys.path
 #   so that you can import the dgrid module
 import sys,os
@@ -145,16 +159,6 @@ def execute(args):
         df_iv_csv_path = DEFAULT_IV_FILE_PATH.replace('.csv',f'_{commod_code}.csv')
         mg = get_main_grid(commod_code, year_2_digits, df_iv_csv_path)
         return mg
-    
-    # Step 4: create the main Div that holds all of the charts
-#     print(f'starting load chart info dictionary from pickle at {datetime.datetime.now()}')
-#     temp_dict = pickle.load(open(PICKLE_PATH,'rb'))
-#     dict_chart_info = {}
-#     for kc in temp_dict.keys():
-#         dict_chart_info[kc] = {}
-#         for ky in temp_dict[kc].keys():
-#             ky_int = int(ky)
-#             dict_chart_info[kc][ky_int] = temp_dict[kc][ky]
 
             
     dict_chart_info = {}
@@ -163,7 +167,7 @@ def execute(args):
                         input_transformer=lambda commod,data:_get_main_grid_from_dropdowns(commod,data),
                         dom_storage_dict=dict_chart_info)
     
-    # Step 5: create the dash app, the layout, and the callbacks
+    # Step 4: create the dash app, the layout, and the callbacks
     app = dash.Dash()
     main_div = html.Div(children=[title_div,dropdown_grid,content_div.html])
     
@@ -173,7 +177,7 @@ def execute(args):
     [c.callback(app) for c in callback_components]
         
     
-    # Step 6: run the server    
+    # Step 5: run the server    
     host = args.host
     port = args.port
     app.run_server(host=host,port=port)
