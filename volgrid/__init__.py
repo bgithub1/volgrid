@@ -40,6 +40,11 @@ import pickle
 import argparse as ap
 from dash.dependencies import Input, Output,State
 
+
+CONTRACTS_TO_DISPLAY_DICT = {'names':['E-Mini SP','Nymex Crude','Ice Brent','NYMEX Natural Gas'], 
+                             'symbols':['ES','CL','CB','NG']
+}                             
+
 DEFAULT_IV_FILE_PATH = './df_iv_final.csv'
 PICKLE_PATH = './all_main_grids.p'
 
@@ -122,11 +127,16 @@ def execute(args):
 
     #    Step 2.2: create the commodity dropdown
     def _transform_commod_selection(data):
-#         print(data)
         return data
+
+#     select_commod_div  = dgrid.DropDownDiv('commod_dropdown', 
+#                             ['E-Mini SP','Nymex Crude','Ice Brent','CME EuroDollar'], 
+#                              ['ES','CL','CB','GE'],style=STYLE_UPGRID,
+#                             transformer_method=_transform_commod_selection
+#                              )
     select_commod_div  = dgrid.DropDownDiv('commod_dropdown', 
-                            ['E-Mini SP','Nymex Crude','Ice Brent'], 
-                             ['ES','CL','CB'],style=STYLE_UPGRID,
+                            CONTRACTS_TO_DISPLAY_DICT['names'], 
+                             CONTRACTS_TO_DISPLAY_DICT['symbols'],style=STYLE_UPGRID,
                             transformer_method=_transform_commod_selection
                              )
 
@@ -137,7 +147,7 @@ def execute(args):
     select_year_div =  dgrid.DropDownDiv('year_dropdown', 
                             full_years,years ,style=STYLE_UPGRID,default_initial_index=last_year_index)
 
-    #    Step 2.2=4: create a grid with the above 3 elements
+    #    Step 2.4: create a grid with the above 3 elements
     dropdown_grid = dgrid.create_grid([info_div,select_commod_div,select_year_div],num_columns=3,column_width_percents=[70,14.95,14.95])
 
     # Step 3: define a method that gets called when the user selects a dropdown

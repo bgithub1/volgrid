@@ -122,4 +122,17 @@ class VolTable():
             ret_figs.append(f)
         return ret_figs
 
-                
+if __name__=='__main__':
+    commod = 'GE'
+    year = 19
+    vt = VolTable(f'df_iv_final_{commod}.csv')                    
+    all_contracts = sorted(vt.df_iv.symbol.unique())
+    clist = [c for c in all_contracts if (c[:2]==commod) & (c[-2:]==str(year))]
+    for c in clist:
+        dft = vt.df_iv[vt.df_iv.symbol==c]        
+        if len(dft)<=0:
+            print(f'no data for symbol {c}')
+        else:
+            fig_list = vt.graph_skew(c)
+            # create a reactive grid graph
+            print(fig_list)
