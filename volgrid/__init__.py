@@ -19,10 +19,11 @@ if  not os.path.abspath('./') in sys.path:
     sys.path.append(os.path.abspath('./'))
 if  not os.path.abspath('../') in sys.path:
     sys.path.append(os.path.abspath('../'))
-sys.path.append(os.path.abspath('../../dashgrid'))
-sys.path.append(os.path.abspath('../../dashgrid/dashgrid'))
+# sys.path.append(os.path.abspath('../../dashgrid'))
+# sys.path.append(os.path.abspath('../../dashgrid/dashgrid'))
 # print(sys.path)
-from dashgrid import dgrid
+# from dashgrid import dgrid
+from volgrid import dgrid
 import dash_core_components as dcc
 import traceback
 
