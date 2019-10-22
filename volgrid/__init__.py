@@ -179,7 +179,10 @@ def execute(args):
                         dom_storage_dict=dict_chart_info)
     
     # Step 4: create the dash app, the layout, and the callbacks
-    app = dash.Dash()
+    if args.additional_route is not None:
+        app = dash.Dash(url_base_pathname=args.additional_route)
+    else:
+        app = dash.Dash()
     main_div = html.Div(children=[title_div,dropdown_grid,content_div.html])
     
     app.layout = html.Div(children=[main_div])
@@ -211,6 +214,9 @@ if __name__ == '__main__':
     parser.add_argument('--do_precompute',type=bool,
                         help='precoumpte all graphs and pickle them',
                         default=False)
+    parser.add_argument('--additional_route',type=str,nargs='?',
+                        help='the additional URI, if needed (like /oilgas or /risk if the full URL has to include it')
+
     n = datetime.datetime.now()
     yyyymmdd = n.strftime('%Y%m%d')
     yy = int(str(yyyymmdd)[2:4])
