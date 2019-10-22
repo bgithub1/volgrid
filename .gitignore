@@ -5,3 +5,5 @@ fnames.csv
 temp*.csv
 *.pyc
 .ipynb_checkpoints
+.DS_Store
+__pycache__
