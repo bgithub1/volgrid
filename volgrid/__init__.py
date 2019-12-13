@@ -142,7 +142,7 @@ def execute(args):
                              )
 
     #    Step 2.3: create the year dropdown
-    years = ['%02d' %(y) for y in np.arange(11,20)]
+    years = ['%02d' %(y) for y in np.arange(11,21)]
     full_years = ['20'+y for y in years]
     last_year_index = len(years)-1
     select_year_div =  dgrid.DropDownDiv('year_dropdown', 
