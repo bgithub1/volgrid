@@ -91,7 +91,8 @@ class VolTable():
         df_ret = df12[df12.settle_date==first_max_count_settle_date][['moneyness']]
         all_settle_dates = sorted(df_counts.settle_date.unique())
         for settle_date in all_settle_dates:
-            df_temp = df12[df12.settle_date==settle_date][['moneyness','vol_skew']]
+#             df_temp = df12[df12.settle_date==settle_date][['moneyness','vol_skew']]
+            df_temp = df12[df12.settle_date==settle_date][['moneyness','vol_skew']].drop_duplicates('moneyness')
             df_ret = df_ret.merge(df_temp,on='moneyness',how='outer')
             df_ret = df_ret.rename(columns={'vol_skew':str(settle_date)})
         df_ret = df_ret.sort_values('moneyness')
@@ -123,8 +124,8 @@ class VolTable():
         return ret_figs
 
 if __name__=='__main__':
-    commod = 'GE'
-    year = 19
+    commod = 'ES'
+    year = 20
     vt = VolTable(f'df_iv_final_{commod}.csv')                    
     all_contracts = sorted(vt.df_iv.symbol.unique())
     clist = [c for c in all_contracts if (c[:2]==commod) & (c[-2:]==str(year))]
