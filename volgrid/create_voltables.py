@@ -14,6 +14,20 @@ def plotly_plot(df_in,x_column,plot_title=None,
                 bar_plot=False,figsize=(16,10),
                 number_of_ticks_display=20,
                 yaxis2_cols=None):
+    '''
+    Return a plotly Figure that you can use with iplot, to produce
+    multi-axis x/y scatter and bar graphs
+    
+    :param df_in: data frame with a single x, and multiple y values to graph
+    :param x_column: the column in df_in that holds the x-axis values
+    :param plot_title: title of plot 
+    :param y_left_label:
+    :param y_right_label:
+    :param bar_plot: If True, plot bars, other wise, plot x/y scatter line
+    :param figsize: 
+    :param number_of_ticks_display: Number of x axis major ticks to display
+    :param yaxis2_cols: the dataframe columns that hold the y values for the second y axis, if any
+    '''
     ya2c = [] if yaxis2_cols is None else yaxis2_cols
     ycols = [c for c in df_in.columns.values if c != x_column]
     # create tdvals, which will have x axis labels
