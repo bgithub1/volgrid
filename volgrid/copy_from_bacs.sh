@@ -4,6 +4,7 @@
 # example:
 # bash copy_from_bacs.sh # this copies CB CL ES and NG
 # bash copy_from_bacs.sh CB NG # this copies just CB and NG
+
 barchartacs_folder='../../barchartacs/barchartacs/temp_folder'
 if [[ -z ${1} ]]
 then
