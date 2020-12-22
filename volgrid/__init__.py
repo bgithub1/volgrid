@@ -10,6 +10,8 @@ strikes are computed, and displayed via Plotly graphs, and Dash html components.
 The options settlement data is stored in a postgres database after it is downloaded
 from barchart.  Option implied volatility calculations are executed in the module option_models.py.
 
+When running local, use:
+http://127.0.0.1:8400/volgrid
 '''
 
 # Add the folder that contains this module, and it's parent folder to sys.path
