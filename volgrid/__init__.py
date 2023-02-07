@@ -86,14 +86,14 @@ def get_main_grid(commod_code,year_2_digits,df_iv_csv_path):
         fig_list = vt.graph_skew(c)
         # create a reactive grid graph
         for fig in fig_list:
-            gr = dgrid.GridGraph(fig.layout.title, fig.layout.title ,None,figure=fig,
+            # gr = dgrid.GridGraph(fig.layout.title, fig.layout.title ,None,figure=fig,
+            gr = dgrid.GridGraph(str(fig.layout.title), fig.layout.title ,None,figure=fig,
                     df_x_column='moneyness')
             grid_list.append(gr)    
 
     # combine the table and the graph into the main grid
     main_grid =  dgrid.create_grid(grid_list,num_columns=2)
     return main_grid
-
 
 def pre_compute_main_grids(commod_list,year_list):
     dict_return = {}

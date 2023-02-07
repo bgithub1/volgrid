@@ -145,15 +145,23 @@ def parse_contents(contents):
 
 #**************************************************************************************************
 class GridItem():
-    def __init__(self,child,html_id=None):
+    def __init__(self,child,html_id=None,use_loading=False):
         self.child = child
         self.html_id = html_id
+        self.use_loading = use_loading
     @property
     def html(self):
-        if self.html_id is not None:
-            return html.Div(children=self.child,className='grid-item',id=self.html_id)
+        if self.use_loading:
+            if self.html_id is not None:
+                h =  html.Div(children=self.child,className='grid-item',id=self.html_id)
+            else:
+                h =  html.Div(children=self.child,className='grid-item')
+            return dcc.Loading(children=[h],type='cube')
         else:
-            return html.Div(children=self.child,className='grid-item')
+            if self.html_id is not None:
+                return html.Div(children=self.child,className='grid-item',id=self.html_id)
+            else:
+                return html.Div(children=self.child,className='grid-item')
 #**************************************************************************************************
 
 
@@ -288,6 +296,7 @@ class GridGraph():
                  df_in=None,
                  plot_bars=False,
                  input_transformer=None):
+        # self.html_id = html_id
         self.html_id = html_id
         self.input_content_tuple = input_content_tuple
 
@@ -401,7 +410,7 @@ def create_grid(component_array,num_columns=2,column_width_percents=None,additio
 #     g =  html.Div([GridItem(c).html if type(c)==str else c.html for c in component_array], style=gs)
 
     div_children = []
-    for c in component_array:
+    for i,c in enumerate(component_array):
         if type(c)==str:
             div_children.append(GridItem(c).html)
         elif hasattr(c,'html'):
@@ -453,7 +462,10 @@ class ReactiveDiv():
         self.dom_storage_dict = {} if dom_storage_dict is None else dom_storage_dict
         self.dom_storage = dcc.Store(id=self.dom_storage_id,storage_type='session',data=self.dom_storage_dict)
         if display:
-            self.div = dcc.Loading(children=[html.Div([],id=self.html_id,style=s),self.dom_storage],type='cube')
+            # self.div = dcc.Loading(children=[html.Div([],id=self.html_id,style=s),self.dom_storage],type='cube')
+            self.div = dcc.Loading(
+                children=[html.Div([],id=self.html_id,style=s),self.dom_storage],type='cube',fullscreen=True
+            )
         else:
             self.div = html.Div([html.Div([],id=self.html_id,style={'display':'none'}),self.dom_storage])
 
